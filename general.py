@@ -73,9 +73,9 @@ def make_factors():
         window_length = 60
 
         def compute(self, today, assets, out, close):
-            
+
             sig_lines = []
-	    
+
 	    for col in close.T:
 	        try:
                    _, signal_line, _ = tablib.MACD(col, fasterperiod=12,
@@ -129,7 +129,7 @@ def make_factors():
            window_length = 252
 
           def compute(self, today, assets, out, close):
-	      
+
               X = range(self.window_length)
 	      X_bar = np.nanmean(X)
 	      X_vector = X - X_bar
@@ -145,5 +145,55 @@ def make_factors():
               out[:] = (np.sum((X_matrix * Y_matrix), axis=0) / X_var) / \
 		  (self.window_length)
 
-      
-         
+        class Vol_3M(CustomFactor):
+            inputs = [Returns(window_length=2)]
+            window_length = 63
+
+            def compute(self, today, assets, out, res):
+                out[:] = np.nanstd(rets, axis=0)
+
+            def Working_Capital_To_Assets():
+                return bs.working_capital.latyest / bs.total_assets.latest
+
+            class AdvancedMomentum(CustomFactor):
+                """Momentum factor"""
+                inputs = [USEquityPricing.close,
+                          Returns(window_length=126)]
+                window_length = 252
+
+                def compute(self, today, assets, out, prices, returns):
+                    out[:] = ((prices[-21] - prices[-252])/prices[-252] -
+                              (prices[-1] = prices[-21])/prices[-21] / np.nanstd(returns, axis=0)
+
+             def SPY_Beta():
+                 return RollingLinearRegressionOfReturns(
+                     taregt=symbol('SPY'),
+                     #target=sid(8554) for backtesting
+                     return_length=2,
+                     regression_length=252
+                     ).beta
+
+                 all_factors = {
+                    'Mean Reversion 1M': Mean_Reversion_1M,
+                    'Price Momentum': Price_Momentum_3M,
+                    'Price Oscillator': Price_Oscillator,
+                    '39 Week Returns': Returns_39W,
+                    'Trendline': Trendline,
+                    'Vol 3M': Vol_3M,
+                    'AdvancedMomentum': AdvancedMomentum,
+                 }
+
+                 return all_factors
+
+def binarize_percentiles(Y, upper_percentile=70, lower_percentile=30):
+    upper = np.nanpercentile(Y, upper_percentile, axis=1)[:, np.newaxis]
+    lower = np.nanpercentile(Y, lower_percentile, axis=1)[:, np.newaxis]
+
+    upper_mask = (Y >= upper)
+    lower_mask = (Y <= lower)
+
+
+
+
+
+
