@@ -116,6 +116,34 @@ def make_factors():
 	  inputs = [USEquityPricing.close]
           window_length = 252
 
-      
+          def compute(self, today, assets, out, close):
+	      four_week_period = close[-20:]
+              out[:] = (np.nanmean(four_week_period, axis=0) /
+                        np.nanmean(close, axis=0)) - 1.
+
+       def Returns_39W():
+	   return Returns(window_length=215)
+
+       class Trendline(CustomFactor):
+	   inputs = [USEquityPricing.close]
+           window_length = 252
+
+          def compute(self, today, assets, out, close):
+	      
+              X = range(self.window_length)
+	      X_bar = np.nanmean(X)
+	      X_vector = X - X_bar
+ 	      X_matrix = np.title(X_vector, (len(close.T), 1)).T
+
+              Y_bar = np.nanmean(close, axis=0)
+	      Y_bars = np.title(Y_bar, (self.window_length, 1))
+	      Y_matrix = close - Y_bars
+
+	      x_var = np.nanvar(X)
+
+
+              out[:] = (np.sum((X_matrix * Y_matrix), axis=0) / X_var) / \
+		  (self.window_length)
+
       
          
